@@ -5,7 +5,9 @@ import 'package:todo_riverpod/model/model.dart';
 
 class TodoServices {
   final Dio _dio;
+
   TodoServices(this._dio);
+
   Future<List<TodoModel>> fetchTodos() async {
     try {
       final response = await _dio.get("/todos");

@@ -11,8 +11,9 @@ import 'package:todo_riverpod/services/todo_services.dart';
 final dio = Dio();
 final dioClient = DioClient(dio);
 
-final todoStateNotifier = StateNotifierProvider<ToDoNotifier, List<ToDo>>(
-    (ref) => ToDoNotifier(TodoServices(dioClient.dio)));
+final todoStateNotifierProvider =
+    StateNotifierProvider<ToDoNotifier, List<ToDo>>(
+        (ref) => ToDoNotifier(TodoServices(dioClient.dio)));
 
 void main() async {
   await dotenv.load(fileName: ".env");

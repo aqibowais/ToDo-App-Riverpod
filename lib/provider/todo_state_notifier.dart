@@ -17,12 +17,15 @@ class ToDo {
   });
 
   ToDo copyWith(
-      {String? title, String? description, bool? isCompleted, int? id}) {
+      {String? title,
+      String? description,
+      bool? isCompleted,
+      required int id}) {
     return ToDo(
       title: title ?? this.title,
       description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
-      id: id ?? this.id,
+      id: id,
     );
   }
 }
@@ -51,18 +54,28 @@ class ToDoNotifier extends StateNotifier<List<ToDo>> {
   }
 
   Future<void> add(ToDo todo) async {
+    final newTodo = ToDo(
+      title: todo.title,
+      description: todo.description,
+      isCompleted: todo.isCompleted,
+      id: state.isEmpty ? 0 : state.last.id + 1,
+    );
+
+    state = [...state, newTodo];
     try {
-      state = [...state, todo];
       await _todoServices.postTodo(
-          todo.title, todo.description, todo.isCompleted);
+        newTodo.title,
+        newTodo.description,
+        newTodo.isCompleted,
+      );
     } catch (e) {
       print('Failed to add todo: $e');
     }
   }
 
   Future<void> remove(int id) async {
+    state = state.where((todo) => todo.id != id).toList();
     try {
-      state = state.where((todo) => todo.id != id).toList();
       await _todoServices.deleteTodoById(id);
     } catch (e) {
       print('Failed to remove todo: $e');
@@ -70,9 +83,9 @@ class ToDoNotifier extends StateNotifier<List<ToDo>> {
   }
 
   Future<void> removeAll() async {
+    final ids = state.map((todo) => todo.id).toList();
+    state = [];
     try {
-      state = [];
-      final ids = state.map((todo) => todo.id).toList();
       await _todoServices.deleteAllTodos(ids);
     } catch (e) {
       print('Failed to remove all todos: $e');

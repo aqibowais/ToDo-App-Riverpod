@@ -1,9 +1,7 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, avoid_print
 
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:todo_riverpod/main.dart';
 import 'package:todo_riverpod/provider/todo_state_notifier.dart';
 
@@ -21,6 +19,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    ref.read(todoStateNotifierProvider.notifier).fetchTodos();
     titleController = TextEditingController();
     descripController = TextEditingController();
   }
@@ -34,95 +33,155 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final todoState = ref.watch(todoStateNotifier);
-    final todoNotifier = ref.read(todoStateNotifier.notifier);
+    final todos = ref.watch(todoStateNotifierProvider);
+    final todoNotifier = ref.read(todoStateNotifierProvider.notifier);
+
     return Scaffold(
+      backgroundColor: Color(0xff121212),
+      appBar: AppBar(
+        title: Text('UP ToDo',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold)),
+        backgroundColor: Color(0xff121212),
+        toolbarHeight: 80,
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Column(
             children: [
-              Padding(
-                padding: EdgeInsets.all(18),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: titleController,
-                      decoration: InputDecoration(hintText: "Enter title"),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    TextField(
-                      controller: descripController,
-                      decoration:
-                          InputDecoration(hintText: "Enter Description"),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              if (titleController.text.isNotEmpty &&
-                                  descripController.text.isNotEmpty) {
-                                try {
-                                  todoNotifier.add(ToDo(
-                                    id: 0,
-                                    title: titleController.text,
-                                    description: descripController.text,
-                                    isCompleted: false,
-                                  ));
-                                  titleController.text = "";
-                                  descripController.text = "";
-                                } catch (e) {
-                                  print(e.toString());
-                                }
-                              }
-                            },
-                            child: Text("Add TODO")),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        ElevatedButton(
-                            onPressed: () {
-                              try {
-                                todoNotifier.removeAll();
-                              } catch (e) {
-                                print(e.toString());
-                              }
-                            },
-                            child: Text("Remove All")),
-                      ],
-                    )
-                  ],
+              TextField(
+                controller: titleController,
+                cursorColor: Colors.white,
+                decoration: InputDecoration(
+                  hintText: "Enter title",
+                  hintStyle: TextStyle(color: Colors.white),
+                  filled: true,
+                  fillColor: Color(0xff979797),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-              Container(
-                height: MediaQuery.of(context).size.height * 0.8,
-                decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20)),
+              SizedBox(height: 10),
+              TextField(
+                controller: descripController,
+                cursorColor: Colors.white,
+                decoration: InputDecoration(
+                  hintText: "Enter Description",
+                  hintStyle: TextStyle(color: Colors.white),
+                  filled: true,
+                  fillColor: Color(0xff979797),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
-                child: todoState.isEmpty
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      if (titleController.text.isNotEmpty &&
+                          descripController.text.isNotEmpty) {
+                        try {
+                          todoNotifier.add(ToDo(
+                            id: 0,
+                            title: titleController.text,
+                            description: descripController.text,
+                            isCompleted: false,
+                          ));
+                          titleController.clear();
+                          descripController.clear();
+                        } catch (e) {
+                          print(e.toString());
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    child: Text(
+                      "Add TODO",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      try {
+                        todoNotifier.removeAll();
+                      } catch (e) {
+                        print(e.toString());
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xff8687E7),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    child: Text(
+                      "Remove All",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: todos.isEmpty
                     ? const Center(child: Text('No Todos'))
                     : Padding(
-                        padding: EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(vertical: 20),
                         child: ListView.builder(
-                          itemCount: todoState.length,
+                          itemCount: todos.length,
                           itemBuilder: (context, index) {
-                            final todo = todoState[index];
-                            return ListTile(
-                                title: Text(todo.title),
-                                subtitle: Text(todo.description),
-                                trailing: IconButton(
+                            final todo = todos[index];
+                            return Dismissible(
+                              key: Key(todo.id.toString()),
+                              onDismissed: (direction) {
+                                todoNotifier.remove(todo.id);
+                              },
+                              background: Container(
+                                color: Color(0xff8687E7),
+                                alignment: Alignment.centerRight,
+                                padding: EdgeInsets.only(right: 20),
+                                child: Icon(Icons.delete, color: Colors.white),
+                              ),
+                              child: Card(
+                                elevation: 2,
+                                color: Color(0xff979797),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                margin: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                child: ListTile(
+                                  title: Text(todo.title,
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold)),
+                                  subtitle: Text(
+                                    todo.description,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  trailing: IconButton(
                                     onPressed: () {
                                       todoNotifier.remove(todo.id);
                                     },
-                                    icon: Icon(Icons.remove_circle_outline)));
+                                    icon: Icon(Icons.remove_circle_outline),
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                         ),
                       ),
