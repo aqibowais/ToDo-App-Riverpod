@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/App_Dev/todo_riverpod/linux"
+  "cmake.sourceDirectory": "C:/App_Dev/todo_riverpod/linux",
+  "dart.flutterSdkPath": ".fvm/versions/3.22.2"
 }
